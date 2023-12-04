@@ -122,6 +122,21 @@ public static void logError(Exception e) {
     );
     notifyAdministrator();
 }
+
+public static void deleteError(List<Integration_Error__c> errorsToDelete) {
+    Date limitDate = Date.today().addDays(-30);
+    List<Integration_Error__c> errorsPasDue = [SELECT Id, Created_Date__c FROM Integration_Error__c WHERE Created_Date__c < :limitDate];
+    for (Integration_Error__c error : errorsPasDue) {
+        if (error.Created_Date__c < limitDate) {
+            errorsToDelete.add(error);
+        }
+    }
+    if (!errorsToDelete.isEmpty()) {
+        Database.delete(errorsToDelete);
+    }
+}
+
+
 public static void makeHttpRequest() {
         String endpoint = 'https://altimetrik-bootcamp.herokuapp.com/LegalAccounts';
         HttpRequest request = new HttpRequest();
@@ -141,6 +156,8 @@ public static void makeHttpRequest() {
                 List<Client__c> clientsToUpdate = new List<Client__c>();
                 List<Client__c> clientsToInsert = new List<Client__c>();
                 List<String> clientsNumbersInJSON = new List<String>();
+                List<Integration_Error__c> errorsToDelete = new List<Integration_Error__c>();
+
 
                 //Itero el json y agrego la logica para ver que hago con cada registro del archivo
                 for (Object obj : parsedJsonList) {
@@ -177,6 +194,7 @@ public static void makeHttpRequest() {
                 Database.update(clientsToUpdate);
                 Database.insert(clientsToInsert);
                 deleteClientsNotInJSON(clientsNumbersInJSON);
+                deleteError(errorsToDelete);
             } else {
                 logResponseError(response.getStatusCode());
             }
