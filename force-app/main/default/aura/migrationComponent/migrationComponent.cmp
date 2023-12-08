@@ -1,0 +1,3 @@
+<aura:component controller="ulc_MigrationController" implements="force:appHostable">
+    <lightning:button label="Start Migration" title="Neutral" onclick="{! c.startMigration }"/>
+</aura:component>
